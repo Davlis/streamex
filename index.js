@@ -12,11 +12,25 @@ const config = {
   secret: process.env.SECRET
 }
 
-const app = express()
+const authorizeFn = (req, res, next) => {
+  const { secret: secretSet } = config
+  
+  if (typeof secretSet === 'undefined') {
+    next()
+    return
+  }
 
-app.use(monitor())
+  const secretReceived = req.header('x-secret')
 
-app.get('/backup', (req, res) => {
+  if (secretSet !== secretReceived) {
+    res.send('Inocrrect secret')
+    return
+  }
+
+  next()
+}
+
+const getBackupFn = (req, res) => {
   console.log(`P: Processing started`)
 
   const { source } = config
@@ -54,8 +68,15 @@ app.get('/backup', (req, res) => {
       })
     })
   .walk()
-})
+}
+
+const app = express()
+
+app.use(monitor())
+app.use(authorizeFn)
+app.get('/', getBackupFn)
 
 app.listen(config.port, () => {
   console.log(`P: Streamex listening at http://localhost:${config.port}`)
 })
+
