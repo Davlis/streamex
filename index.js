@@ -30,13 +30,13 @@ const authorizeFn = (req, res, next) => {
   next()
 }
 
-const getBackupFn = (req, res) => {
+const streamFn = (req, res) => {
   console.log(`P: Processing started`)
 
   const { source } = config
 
   if (!fs.existsSync(source)) {
-    res.send('Backup source defined incorrectly.')
+    res.send('Source defined incorrectly.')
     return
   }
 
@@ -74,7 +74,7 @@ const app = express()
 
 app.use(monitor())
 app.use(authorizeFn)
-app.get('/', getBackupFn)
+app.get('/', streamFn)
 
 app.listen(config.port, () => {
   console.log(`P: Streamex listening at http://localhost:${config.port}`)
